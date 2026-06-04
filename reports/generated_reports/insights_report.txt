@@ -1,0 +1,160 @@
+==================================================
+IPL ANALYTICS DASHBOARD REPORT
+==================================================
+
+Generated Date : 2026-06-04
+Project Name   : IPL Analytics Dashboard
+Dataset        : IPL Matches Dataset
+
+==================================================
+EXECUTIVE SUMMARY
+==================================================
+
+Total Matches Analysed      : 1095
+Total Teams                 : 15
+Total Venues                : 49
+Total Seasons               : 16
+
+==================================================
+TEAM ANALYSIS
+==================================================
+
+Most Successful Team :
+Mumbai Indians
+
+Total Wins :
+142
+
+Second Best Team :
+Chennai Super Kings
+
+Total Wins :
+131
+
+Highest Team Win Percentage :
+Chennai Super Kings
+
+==================================================
+PLAYER ANALYSIS
+==================================================
+
+Top Player of Match Winner :
+AB de Villiers
+
+Player of Match Awards :
+25
+
+Second Best Player :
+Chris Gayle
+
+Player of Match Awards :
+22
+
+Most Consistent Player :
+Virat Kohli
+
+==================================================
+VENUE ANALYSIS
+==================================================
+
+Most Active Venue :
+Wankhede Stadium
+
+Matches Hosted :
+118
+
+Second Most Active Venue :
+Eden Gardens
+
+Matches Hosted :
+110
+
+==================================================
+TOSS ANALYSIS
+==================================================
+
+Matches Where Toss Winner Won Match :
+567
+
+Matches Where Toss Winner Lost Match :
+528
+
+Toss Impact Percentage :
+51.78%
+
+Most Preferred Toss Decision :
+Field First
+
+==================================================
+MATCH ANALYSIS
+==================================================
+
+Largest Victory By Runs :
+146 Runs
+
+Winning Team :
+Mumbai Indians
+
+Largest Victory By Wickets :
+10 Wickets
+
+Winning Team :
+Royal Challengers Bangalore
+
+Total Super Over Matches :
+14
+
+==================================================
+SEASON ANALYSIS
+==================================================
+
+Season With Highest Matches :
+2023
+
+Matches Played :
+74
+
+Most Competitive Season :
+2020
+
+Average Win Margin :
+18.4 Runs
+
+==================================================
+ADVANCED INSIGHTS
+==================================================
+
+1. Teams winning the toss have only a slight
+   advantage in IPL matches.
+
+2. Mumbai Indians and Chennai Super Kings
+   dominate the league historically.
+
+3. Wankhede Stadium is the most utilized
+   venue in IPL history.
+
+4. AB de Villiers remains among the most
+   impactful match winners.
+
+5. Most teams prefer fielding first after
+   winning the toss.
+
+6. Super Over matches are rare but highly
+   exciting events in IPL history.
+
+==================================================
+BUSINESS INSIGHTS
+==================================================
+
+• Venue popularity impacts match attendance.
+
+• Toss decisions significantly influence
+  game strategy.
+
+• Experienced teams show higher consistency.
+
+• Certain venues favor chasing teams.
+
+==================================================
+END OF REPORT
+==================================================
