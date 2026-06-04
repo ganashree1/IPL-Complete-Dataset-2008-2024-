@@ -1,19 +1,45 @@
+
 import os
 
-os.makedirs("reports/generated_reports", exist_ok=True)
+class ReportGenerator:
 
-report_path = "reports/generated_reports/insights_report.txt"
+    def __init__(self, df):
+        self.df = df
 
-with open(report_path, "w", encoding="utf-8") as file:
-    file.write("""
-IPL ANALYTICS DASHBOARD REPORT
-=============================
+    def generate_all_reports(self):
 
-Generated Date : 2026-06-04
+        os.makedirs(
+            "reports/generated_reports",
+            exist_ok=True
+        )
 
-This report contains Team Analysis,
-Player Analysis, Venue Analysis,
-Toss Analysis and Match Insights.
-""")
+        report_path = (
+            "reports/generated_reports/"
+            "insights_report.txt"
+        )
 
-print("Report Generated Successfully")
+        with open(
+            report_path,
+            "w",
+            encoding="utf-8"
+        ) as file:
+
+            file.write(
+                "IPL ANALYTICS DASHBOARD REPORT\n"
+            )
+
+            file.write(
+                "=============================\n\n"
+            )
+
+            file.write(
+                f"Total Matches : {len(self.df)}\n\n"
+            )
+
+            if "winner" in self.df.columns:
+                file.write(
+                    f"Top Team : "
+                    f"{self.df['winner'].mode()[0]}\n"
+                )
+
+        return report_path
