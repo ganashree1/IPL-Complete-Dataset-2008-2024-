@@ -234,29 +234,30 @@ if "toss_decision" in filtered_df.columns:
 # WIN BY RUNS
 # ==========================================
 
-st.subheader("🔥 Win Margin by Runs")
+st.subheader("⚡ Win Margin by Wickets")
 
 if "margin" in filtered_df.columns and "margin_type" in filtered_df.columns:
 
-    runs_df = filtered_df[
-        filtered_df["margin_type"].str.lower() == "runs"
+    wickets_df = filtered_df[
+        filtered_df["margin_type"].str.lower() == "wickets"
     ]
 
-    if not runs_df.empty:
+    if not wickets_df.empty:
 
-        fig4 = px.histogram(
-            runs_df,
+        fig5 = px.histogram(
+            wickets_df,
             x="margin",
-            nbins=30,
-            title="Runs Margin Distribution"
+            nbins=15,
+            title="Wicket Margin Distribution"
         )
 
         st.plotly_chart(
-            fig4,
+            fig5,
             use_container_width=True
         )
+
     else:
-        st.warning("Run margin data unavailable.")
+        st.warning("Wicket margin data unavailable.")
 
 # ==========================================
 # WIN BY WICKETS
