@@ -1,291 +1,332 @@
+```python
 import streamlit as st
 import pandas as pd
-import numpy as np
 import plotly.express as px
-import plotly.graph_objects as go
 
-# -----------------------------
+from src.utils import (
+    load_data,
+    dashboard_kpis
+)
+
+from src.insights import IPLInsights
+from src.report_generator import ReportGenerator
+
+# ==========================================
 # PAGE CONFIG
-# -----------------------------
+# ==========================================
+
 st.set_page_config(
     page_title="IPL Analytics Dashboard",
     page_icon="🏏",
     layout="wide"
 )
 
-# -----------------------------
+# ==========================================
 # LOAD DATA
-# -----------------------------
-@st.cache_data
-def load_data():
-    df = pd.read_csv("data/matches.csv")
-    return df
+# ==========================================
 
-df = load_data()
-from src.report_generator import ReportGenerator
+df = load_data("data/matches.csv")
+
+if df.empty:
+    st.error("Dataset not found!")
+    st.stop()
+
+# ==========================================
+# REPORT GENERATOR
+# ==========================================
 
 report_gen = ReportGenerator(df)
 
-# -----------------------------
-# TITLE
-# -----------------------------
-st.title("🏏 IPL Deep Analytics Dashboard")
+# ==========================================
+# HEADER
+# ==========================================
+
+st.title("🏏 IPL Analytics Dashboard")
+
+st.markdown("""
+Analyze IPL matches, teams, players,
+venues and performance trends using
+interactive visualizations.
+""")
+
 st.markdown("---")
 
-# -----------------------------
-# SIDEBAR FILTERS
-# -----------------------------
-st.sidebar.header("Filters")
-
-seasons = sorted(df['season'].dropna().unique())
-
-selected_seasons = st.sidebar.multiselect(
-    "Select Season",
-    seasons,
-    default=seasons
-)
-
-filtered_df = df[df['season'].isin(selected_seasons)]
-
-teams = sorted(
-    list(
-        set(filtered_df['team1'].dropna().unique())
-        .union(set(filtered_df['team2'].dropna().unique())
-    ))
-)
-
-selected_teams = st.sidebar.multiselect(
-    "Select Team",
-    teams,
-    default=teams
-)
-
-filtered_df = filtered_df[
-    (filtered_df['team1'].isin(selected_teams))
-    | (filtered_df['team2'].isin(selected_teams))
-]
-
-# -----------------------------
+# ==========================================
 # KPI SECTION
-# -----------------------------
-st.subheader("📊 Executive Summary")
+# ==========================================
+
+kpis = dashboard_kpis(df)
 
 col1, col2, col3, col4 = st.columns(4)
 
-total_matches = len(filtered_df)
-
-total_teams = len(
-    set(filtered_df['team1']).union(set(filtered_df['team2']))
+col1.metric(
+    "Matches",
+    kpis["Matches"]
 )
 
-total_venues = filtered_df['venue'].nunique()
+col2.metric(
+    "Teams",
+    kpis["Teams"]
+)
 
-total_seasons = filtered_df['season'].nunique()
+col3.metric(
+    "Venues",
+    kpis["Venues"]
+)
 
-col1.metric("Matches", total_matches)
-col2.metric("Teams", total_teams)
-col3.metric("Venues", total_venues)
-col4.metric("Seasons", total_seasons)
+col4.metric(
+    "Seasons",
+    kpis["Seasons"]
+)
 
 st.markdown("---")
 
-# -----------------------------
-# TEAM WINS ANALYSIS
-# -----------------------------
-st.subheader("🏆 Most Successful Teams")
+# ==========================================
+# TOP WINNING TEAMS
+# ==========================================
 
-wins = filtered_df['winner'].value_counts().reset_index()
+st.subheader("🏆 Top Winning Teams")
 
-wins.columns = ['Team', 'Wins']
-
-fig = px.bar(
-    wins,
-    x='Team',
-    y='Wins',
-    text='Wins',
-    title='Team Wins'
-)
-
-st.plotly_chart(fig, use_container_width=True)
-
-# -----------------------------
-# PIE CHART
-# -----------------------------
-st.subheader("📈 Win Share")
-
-top10 = wins.head(10)
-
-fig2 = px.pie(
-    top10,
-    names='Team',
-    values='Wins',
-    hole=0.4
-)
-
-st.plotly_chart(fig2, use_container_width=True)
-
-# -----------------------------
-# TOSS ANALYSIS
-# -----------------------------
-st.subheader("🪙 Toss Impact")
-
-if 'toss_winner' in filtered_df.columns:
-
-    toss_win = (
-        filtered_df[
-            filtered_df['toss_winner']
-            == filtered_df['winner']
-        ]
-        .shape[0]
-    )
-
-    toss_loss = total_matches - toss_win
-
-    toss_df = pd.DataFrame({
-        "Category": ["Won Match", "Lost Match"],
-        "Count": [toss_win, toss_loss]
-    })
-
-    fig3 = px.pie(
-        toss_df,
-        names='Category',
-        values='Count',
-        title='Toss Winner Match Result'
-    )
-
-    st.plotly_chart(fig3, use_container_width=True)
-
-# -----------------------------
-# VENUE ANALYSIS
-# -----------------------------
-st.subheader("🏟 Top Venues")
-
-venue_count = (
-    filtered_df['venue']
+winner_df = (
+    df["winner"]
     .value_counts()
     .head(10)
     .reset_index()
 )
 
-venue_count.columns = ['Venue', 'Matches']
+winner_df.columns = [
+    "Team",
+    "Wins"
+]
 
-fig4 = px.bar(
-    venue_count,
-    x='Matches',
-    y='Venue',
-    orientation='h',
-    text='Matches',
-    title='Top 10 Venues'
+fig1 = px.bar(
+    winner_df,
+    x="Team",
+    y="Wins",
+    color="Wins",
+    text="Wins",
+    title="Top IPL Teams"
 )
 
-st.plotly_chart(fig4, use_container_width=True)
+st.plotly_chart(
+    fig1,
+    use_container_width=True
+)
 
-# -----------------------------
-# PLAYER OF MATCH
-# -----------------------------
-if 'player_of_match' in filtered_df.columns:
+# ==========================================
+# PLAYER OF MATCH ANALYSIS
+# ==========================================
 
-    st.subheader("⭐ Player of Match Leaders")
+st.subheader("⭐ Top Players")
 
-    pom = (
-        filtered_df['player_of_match']
-        .value_counts()
-        .head(15)
-        .reset_index()
+player_df = (
+    df["player_of_match"]
+    .value_counts()
+    .head(10)
+    .reset_index()
+)
+
+player_df.columns = [
+    "Player",
+    "Awards"
+]
+
+fig2 = px.bar(
+    player_df,
+    x="Player",
+    y="Awards",
+    color="Awards",
+    text="Awards",
+    title="Player Of Match Leaders"
+)
+
+st.plotly_chart(
+    fig2,
+    use_container_width=True
+)
+
+# ==========================================
+# TOP VENUES
+# ==========================================
+
+st.subheader("🏟️ Top Venues")
+
+venue_df = (
+    df["venue"]
+    .value_counts()
+    .head(10)
+    .reset_index()
+)
+
+venue_df.columns = [
+    "Venue",
+    "Matches"
+]
+
+fig3 = px.bar(
+    venue_df,
+    x="Venue",
+    y="Matches",
+    color="Matches",
+    text="Matches",
+    title="Most Active Venues"
+)
+
+st.plotly_chart(
+    fig3,
+    use_container_width=True
+)
+
+# ==========================================
+# MATCHES PER SEASON
+# ==========================================
+
+if "season" in df.columns:
+
+    st.subheader("📈 Season Trend")
+
+    season_df = (
+        df.groupby("season")
+        .size()
+        .reset_index(name="Matches")
     )
 
-    pom.columns = ['Player', 'Awards']
-
-    fig5 = px.bar(
-        pom,
-        x='Player',
-        y='Awards',
-        text='Awards',
-        color='Awards'
+    fig4 = px.line(
+        season_df,
+        x="season",
+        y="Matches",
+        markers=True,
+        title="Matches Per Season"
     )
 
-    st.plotly_chart(fig5, use_container_width=True)
-
-# -----------------------------
-# WIN MARGIN ANALYSIS
-# -----------------------------
-if 'win_by_runs' in filtered_df.columns:
-
-    st.subheader("🔥 Win Margin Distribution")
-
-    fig6 = px.histogram(
-        filtered_df,
-        x='win_by_runs',
-        nbins=30,
-        title='Win By Runs Distribution'
+    st.plotly_chart(
+        fig4,
+        use_container_width=True
     )
 
-    st.plotly_chart(fig6, use_container_width=True)
+# ==========================================
+# TOSS IMPACT
+# ==========================================
 
-# -----------------------------
-# SEASON TREND
-# -----------------------------
-st.subheader("📅 Matches Per Season")
+if (
+    "toss_winner" in df.columns
+    and
+    "winner" in df.columns
+):
 
-season_trend = (
-    filtered_df.groupby('season')
-    .size()
-    .reset_index(name='Matches')
+    st.subheader("🪙 Toss Impact")
+
+    toss_wins = len(
+        df[
+            df["toss_winner"]
+            ==
+            df["winner"]
+        ]
+    )
+
+    toss_losses = len(df) - toss_wins
+
+    toss_df = pd.DataFrame({
+
+        "Result": [
+            "Won Toss & Match",
+            "Won Toss Lost Match"
+        ],
+
+        "Count": [
+            toss_wins,
+            toss_losses
+        ]
+
+    })
+
+    fig5 = px.pie(
+        toss_df,
+        names="Result",
+        values="Count",
+        hole=0.4
+    )
+
+    st.plotly_chart(
+        fig5,
+        use_container_width=True
+    )
+
+# ==========================================
+# INSIGHTS
+# ==========================================
+
+st.subheader("🧠 AI Insights")
+
+insights_engine = IPLInsights(df)
+
+insights = (
+    insights_engine
+    .generate_all_insights()
 )
 
-fig7 = px.line(
-    season_trend,
-    x='season',
-    y='Matches',
-    markers=True
-)
+for insight in insights:
+    st.success(insight)
 
-st.plotly_chart(fig7, use_container_width=True)
+# ==========================================
+# DOWNLOAD REPORT
+# ==========================================
 
-# -----------------------------
-# INSIGHTS SECTION
-# -----------------------------
-st.subheader("🧠 AI Generated Insights")
+st.markdown("---")
+st.subheader("📄 Download Report")
 
-best_team = wins.iloc[0]['Team']
-best_team_wins = wins.iloc[0]['Wins']
+report_text = f"""
+IPL ANALYTICS DASHBOARD REPORT
 
-best_venue = venue_count.iloc[0]['Venue']
+Total Matches : {len(df)}
 
-st.success(
-    f"""
-    • Most Successful Team : {best_team}
+Top Team :
+{df['winner'].mode()[0]}
 
-    • Total Wins : {best_team_wins}
+Top Player :
+{df['player_of_match'].mode()[0]}
 
-    • Most Active Venue : {best_venue}
-
-    • Total Matches Analysed : {total_matches}
-
-    • Total Seasons Covered : {total_seasons}
-    """
-)
-
-# -----------------------------
-# RAW DATA
-# -----------------------------
-with st.expander("📄 View Dataset"):
-    st.dataframe(filtered_df)
-
-# -----------------------------
-# DOWNLOAD CSV
-# -----------------------------
-csv = filtered_df.to_csv(index=False)
+Top Venue :
+{df['venue'].mode()[0]}
+"""
 
 st.download_button(
-    label="⬇ Download Filtered Data",
-    data=csv,
-    file_name="filtered_matches.csv",
-    mime="text/csv"
+    label="📥 Download Insights Report",
+    data=report_text,
+    file_name="insights_report.txt",
+    mime="text/plain"
 )
 
-# -----------------------------
+# ==========================================
+# GENERATE REPORTS
+# ==========================================
+
+if st.button("📊 Generate All Reports"):
+
+    report_gen.generate_all_reports()
+
+    st.success(
+        "Reports Generated Successfully!"
+    )
+
+# ==========================================
+# RAW DATA
+# ==========================================
+
+with st.expander("📄 View Dataset"):
+
+    st.dataframe(
+        df,
+        use_container_width=True
+    )
+
+# ==========================================
 # FOOTER
-# -----------------------------
+# ==========================================
+
 st.markdown("---")
-st.caption("IPL Analytics Dashboard | Streamlit + Pandas + Plotly")
+
+st.caption(
+    "IPL Analytics Dashboard | Streamlit | Plotly | Python"
+)
+```
