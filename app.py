@@ -22,6 +22,9 @@ def load_data():
     return df
 
 df = load_data()
+from src.report_generator import ReportGenerator
+
+report_gen = ReportGenerator(df)
 
 # -----------------------------
 # TITLE
