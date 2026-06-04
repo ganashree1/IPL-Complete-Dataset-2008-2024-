@@ -234,46 +234,57 @@ if "toss_decision" in filtered_df.columns:
 # WIN BY RUNS
 # ==========================================
 
-st.subheader(
-    "🔥 Win Margin by Runs"
-)
+st.subheader("🔥 Win Margin by Runs")
 
-if "win_by_runs" in filtered_df.columns:
+if "margin" in filtered_df.columns and "margin_type" in filtered_df.columns:
 
-    fig4 = px.histogram(
-        filtered_df,
-        x="win_by_runs",
-        nbins=30,
-        title="Runs Margin Distribution"
-    )
+    runs_df = filtered_df[
+        filtered_df["margin_type"].str.lower() == "runs"
+    ]
 
-    st.plotly_chart(
-        fig4,
-        use_container_width=True
-    )
+    if not runs_df.empty:
+
+        fig4 = px.histogram(
+            runs_df,
+            x="margin",
+            nbins=30,
+            title="Runs Margin Distribution"
+        )
+
+        st.plotly_chart(
+            fig4,
+            use_container_width=True
+        )
+    else:
+        st.warning("Run margin data unavailable.")
 
 # ==========================================
 # WIN BY WICKETS
 # ==========================================
 
-st.subheader(
-    "⚡ Win Margin by Wickets"
-)
+st.subheader("⚡ Win Margin by Wickets")
 
-if "win_by_wickets" in filtered_df.columns:
+if "margin" in filtered_df.columns and "margin_type" in filtered_df.columns:
 
-    fig5 = px.histogram(
-        filtered_df,
-        x="win_by_wickets",
-        nbins=15,
-        title="Wicket Margin Distribution"
-    )
+    wickets_df = filtered_df[
+        filtered_df["margin_type"].str.lower() == "wickets"
+    ]
 
-    st.plotly_chart(
-        fig5,
-        use_container_width=True
-    )
+    if not wickets_df.empty:
 
+        fig5 = px.histogram(
+            wickets_df,
+            x="margin",
+            nbins=15,
+            title="Wicket Margin Distribution"
+        )
+
+        st.plotly_chart(
+            fig5,
+            use_container_width=True
+        )
+    else:
+        st.warning("Wicket margin data unavailable.")
 # ==========================================
 # RESULT DISTRIBUTION
 # ==========================================
